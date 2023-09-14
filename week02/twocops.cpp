@@ -68,7 +68,7 @@ public:
     bool direction;
 
     Cop(bool direction, Node* start) :
-        direction(direction), start(start), position(start->data){}
+            direction(direction), start(start), position(start->data){next = start->next;}
 
     void go(){
         if(direction) {
@@ -94,7 +94,7 @@ public:
                 position.x--;
             }
         }
-        if(next->data == position) start = next;
+        if(next->data == position) {start = next;}
     }
 
     void change_direction() {direction =! direction;}
@@ -115,7 +115,7 @@ int main() {
     }
 
     Node* cop2_start = points.head;
-    for(int i=0; i < (k-1)/2; i++) cop2_start = cop2_start->next;
+    for(int i=0; i < k/2 - 1; i++) cop2_start = cop2_start->next;
 
     Cop cop1(true, points.head);
     Cop cop2(false, cop2_start);
@@ -129,10 +129,14 @@ int main() {
         if(cop1.position == cop2.position) {
             cop1.change_direction();
             cop2.change_direction();
+            cop1.start = cop1.next;
+            cop2.start = cop2.next;
         }
 
         time--;
     }
     cout << cop1.position << endl;
     cout << cop2.position << endl;
+
+
 }
