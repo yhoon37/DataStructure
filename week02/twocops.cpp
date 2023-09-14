@@ -9,7 +9,7 @@ public:
     int y;
 
     bool operator ==(Point other){
-        if(other.x = x && other.y == y) return true;
+        if(other.x == x && other.y == y) return true;
         else return false;
     }
 
