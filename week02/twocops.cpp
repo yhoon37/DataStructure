@@ -1,10 +1,17 @@
 #include <iostream>
+#include <vector>
 
 using namespace std;
+
+class Point;
+
+vector<Point> points;
+int k, x, y;
 
 class Point {
 public:
     Point(int x, int y) : x(x), y(y) {}
+    Point(){}
     int x;
     int y;
 
@@ -21,120 +28,87 @@ ostream& operator <<(ostream& os, Point p){
     return os;
 }
 
-class Node {
-public:
-    Point data;
-    Node* next = nullptr;
-    Node* previous = nullptr;
-
-    Node(Point data): data(data){}
-
-private:
-};
-
-class CircleList {
-public:
-    Node* head = nullptr;
-    int size=0;
-
-    CircleList(){}//default
-
-    void push_back(Node* new_node) {
-        Node* current = head;
-        if(current == nullptr) {
-            head = new_node;
-        }
-        else {
-            for(int i=0; i<size-1; i++) {
-                current = current->next;
-            }
-            current->next = new_node;
-            new_node->previous = current;
-            new_node->next = head;
-            head->previous = new_node;
-        }
-        size++;
-    }
-
-private:
-};
 
 class Cop {
 public:
-    Node* start;
-    Node* next;
-
     Point position;
-    bool direction;
+    int direction;
+    int next_point_index;
 
-    Cop(bool direction, Node* start) :
-            direction(direction), start(start), position(start->data){next = start->next;}
+    Cop(Point position, int direction, int next_point_index) :
+            position(position), direction(direction), next_point_index(next_point_index) {}
 
     void go(){
-        if(direction) {
-            next = start->next;
+        if(points[next_point_index].x > position.x) {
+            position.x++;
         }
-        else {
-            next = start->previous;
+        else if(points[next_point_index].x < position.x){
+            position.x--;
         }
 
-        if(next->data.x == position.x) {
-            if(position.y < next->data.y){
-                position.y++;
-            }
-            else {
-                position.y--;
-            }
+        if(points[next_point_index].y > position.y){
+            position.y++;
         }
-        else {
-            if(position.x < next->data.x) {
-                position.x++;
-            }
-            else {
-                position.x--;
-            }
+        else if(points[next_point_index].y < position.y) {
+            position.y--;
         }
-        if(next->data == position) {start = next;}
     }
 
-    void change_direction() {direction =! direction;}
+    void change_direction() {direction *= -1;}
+
+    void change_next() {
+        next_point_index += direction;
+        if(next_point_index == -1) next_point_index = k-1;
+        if(next_point_index == k) next_point_index = 0;
+    }
 
 private:
 };
 
+
 int main() {
-    int k, x, y, time;
-    CircleList points;
+    int time;
 
     cin >> k;
 
     for(int i=0; i<k; i++) {
         cin >> x >> y;
         Point new_point = Point(x,y);
-        points.push_back(new Node(new_point));
+        points.push_back(new_point);
     }
 
-    Node* cop2_start = points.head;
-    for(int i=0; i < k/2 - 1; i++) cop2_start = cop2_start->next;
-
-    Cop cop1(true, points.head);
-    Cop cop2(false, cop2_start);
+    Cop cop1(points[0], 1, 1);
+    Cop cop2(points[k/2-1], -1, k/2-2);
 
     cin >> time;
 
     while(time > 0) {
+
+
         cop1.go();
         cop2.go();
 
-        if(cop1.position == cop2.position) {
+        int CI1 = cop1.next_point_index;
+        int CI2 = cop2.next_point_index;
+        if((CI1 == CI2 || abs(CI1-CI2) == 1||(CI1==0 && CI2 == k-1) || (CI1 == k-1 && CI2 == 0)) && cop1.position == cop2.position) {
             cop1.change_direction();
             cop2.change_direction();
-            cop1.start = cop1.next;
-            cop2.start = cop2.next;
+            cop1.change_next();
+            cop2.change_next();
+            time--;
+            continue;
         }
+        if(cop1.position == points[cop1.next_point_index]){
+            cop1.change_next();
 
+        }
+        if(cop2.position == points[cop2.next_point_index]){
+            cop2.change_next();
+
+        }
         time--;
     }
+
     cout << cop1.position << endl;
     cout << cop2.position << endl;
 
